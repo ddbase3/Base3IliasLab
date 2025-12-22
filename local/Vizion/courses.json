@@ -1,0 +1,102 @@
+{
+  "display": "datatablereportdisplay",
+  "config": {
+    "paging": true,
+    "columnSelector": true,
+    "pageSize": 20,
+    "sortColumn": "usr_id",
+    "sortDirection": "asc"
+  },
+  "fields": [
+    {
+      "alias": "login",
+      "element": { "type": "fld", "table": "usr_data", "field": "login" },
+      "config": {
+        "label": "Login",
+        "sortable": true,
+        "filter": { "type": "text", "placeholder": "Filter Login" }
+      }
+    },
+    {
+      "alias": "name",
+      "element": {
+        "type": "fn",
+        "function": "concat_ws",
+        "params": [
+          " ",
+          { "type": "fld", "table": "usr_data", "field": "firstname" },
+          { "type": "fld", "table": "usr_data", "field": "lastname" }
+        ]
+      },
+      "config": {
+        "label": "Name",
+        "sortable": true,
+        "filter": { "type": "text", "placeholder": "Filter Name" }
+      }
+    },
+    {
+      "alias": "email",
+      "element": { "type": "fld", "table": "usr_data", "field": "email" },
+      "config": {
+        "label": "E-Mail",
+        "sortable": true,
+        "filter": { "type": "text", "placeholder": "Filter E-Mail" }
+      }
+    },
+    {
+      "alias": "active",
+      "element": { "type": "fld", "table": "usr_data", "field": "active" },
+      "config": {
+        "label": "User aktiv",
+        "sortable": true,
+        "filter": { "type": "text", "placeholder": "Filter User aktiv" }
+      }
+    },
+    {
+      "alias": "matriculation",
+      "element": { "type": "fld", "table": "usr_data", "field": "matriculation" },
+      "config": {
+        "label": "Matrikelnummer",
+        "sortable": true,
+        "filter": { "type": "text", "placeholder": "Filter Matrikelnummer" }
+      }
+    },
+    {
+      "alias": "create_date",
+      "element": { "type": "fld", "table": "object_data", "field": "create_date" },
+      "config": {
+        "label": "Kurs erstellt",
+        "sortable": true,
+        "filter": { "type": "text", "placeholder": "Filter" }
+      }
+    },
+    {
+      "alias": "last_update",
+      "element": { "type": "fld", "table": "object_data", "field": "last_update" },
+      "config": {
+        "label": "Letzte Änderung",
+        "sortable": true,
+        "filter": { "type": "text", "placeholder": "Filter" }
+      }
+    },
+    {
+      "alias": "period_start",
+      "element": { "type": "fld", "table": "crs_settings", "field": "period_start" },
+      "config": {
+        "label": "Kurs-Start",
+        "sortable": true,
+        "filter": { "type": "text", "placeholder": "Filter" }
+      }
+    },
+    {
+      "alias": "period_end",
+      "element": { "type": "fld", "table": "crs_settings", "field": "period_end" },
+      "config": {
+        "label": "Kurs-Ende",
+        "sortable": true,
+        "filter": { "type": "text", "placeholder": "Filter" }
+      }
+    }
+  ],
+  "table": "usr_data"
+}

@@ -1,0 +1,40 @@
+{
+	"name": "object_data",
+	"label": "ILIAS objects",
+	"description": "Stores core metadata for ILIAS objects (title, type, owner, timestamps, import id, offline flag, tile image resource id).",
+	"domain": "ilias",
+	"category": "data",
+	"tags": ["ilias", "object", "metadata"],
+	"fields": [
+		{ "name": "obj_id", "type": "integer", "label": "Object ID", "required": true },
+		{ "name": "type", "type": "string", "label": "Object type", "required": true },
+		{ "name": "title", "type": "string", "label": "Title", "required": true },
+		{ "name": "description", "type": "string", "label": "Description", "required": true },
+		{ "name": "create_date", "type": "datetime", "label": "Created at", "required": false },
+		{ "name": "last_update", "type": "datetime", "label": "Last updated at", "required": false },
+		{ "name": "import_id", "type": "string", "label": "Import ID", "required": false },
+		{ "name": "offline", "type": "boolean", "label": "Is offline" }
+	],
+	"joins": [
+		{
+			"targetTable": "obj_members",
+			"on": { "object_data.obj_id": "obj_members.obj_id" },
+			"type": "INNER",
+			"meta": { "default": true }
+		},
+		{
+			"targetTable": "object_reference",
+			"on": { "object_data.obj_id": "object_reference.obj_id" },
+			"type": "INNER",
+			"meta": { "default": true }
+		},
+		{
+			"targetTable": "crs_settings",
+			"on": { "object_data.obj_id": "crs_settings.obj_id" },
+			"type": "INNER",
+			"meta": { "default": true }
+		}
+	],
+	"defaultFilters": [],
+	"position": { "x": 450, "y": 150 }
+}

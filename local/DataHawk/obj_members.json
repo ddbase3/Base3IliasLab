@@ -1,0 +1,31 @@
+{
+	"name": "obj_members",
+	"label": "Member status of the user",
+	"description": "Records with status fields and flags",
+	"domain": "ilias",
+	"category": "data",
+	"tags": ["member", "status", "flags"],
+	"fields": [
+		{ "name": "obj_id", "type": "integer", "label": "Object ID", "required": true },
+		{ "name": "usr_id", "type": "integer", "label": "User ID", "required": true },
+		{ "name": "admin", "type": "boolean", "label": "Is admin" },
+		{ "name": "tutor", "type": "boolean", "label": "Is tutor" },
+		{ "name": "member", "type": "boolean", "label": "Is member" }
+	],
+	"joins": [
+		{
+			"targetTable": "usr_data",
+			"on": { "obj_members.usr_id": "usr_data.usr_id" },
+			"type": "INNER",
+			"meta": { "default": true }
+		},
+                {
+                        "targetTable": "object_data",
+                        "on": { "obj_members.obj_id": "object_data.obj_id" },
+                        "type": "INNER",
+                        "meta": { "default": true }
+                }
+	],
+	"defaultFilters": [],
+	"position": { "x": 250, "y": 100 }
+}

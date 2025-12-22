@@ -1,0 +1,115 @@
+{
+  "display": "datatablereportdisplay",
+  "config": {
+    "paging": true,
+    "columnSelector": true,
+    "pageSize": 20,
+    "sortColumn": "login",
+    "sortDirection": "asc"
+  },
+  "fields": [
+    {
+      "alias": "login",
+      "element": { "type": "fld", "table": "usr_data", "field": "login" },
+      "config": { "label": "Login", "sortable": true, "filter": { "type": "text", "placeholder": "Filter Login" } }
+    },
+    {
+      "alias": "firstname",
+      "element": { "type": "fld", "table": "usr_data", "field": "firstname" },
+      "config": { "label": "Vorname", "sortable": true, "filter": { "type": "text", "placeholder": "Filter Vorname" } }
+    },
+    {
+      "alias": "lastname",
+      "element": { "type": "fld", "table": "usr_data", "field": "lastname" },
+      "config": { "label": "Nachname", "sortable": true, "filter": { "type": "text", "placeholder": "Filter Nachname" } }
+    },
+    {
+      "alias": "email",
+      "element": { "type": "fld", "table": "usr_data", "field": "email" },
+      "config": { "label": "E-Mail", "sortable": true, "filter": { "type": "text", "placeholder": "Filter E-Mail" } }
+    },
+    {
+      "alias": "tutor",
+      "element": { "type": "fld", "table": "obj_members", "field": "tutor" },
+      "config": { "label": "Tutor", "sortable": true, "filter": { "type": "text", "placeholder": "Filter Tutor" } }
+    },
+    {
+      "alias": "admin",
+      "element": { "type": "fld", "table": "obj_members", "field": "admin" },
+      "config": { "label": "Admin", "sortable": true, "filter": { "type": "text", "placeholder": "Filter Admin" } }
+    },
+    {
+      "alias": "title",
+      "element": { "type": "fld", "table": "object_data", "field": "title" },
+      "config": { "label": "Kurstitel", "sortable": true, "filter": { "type": "text", "placeholder": "Filter Kurstitel" } }
+    },
+    {
+      "alias": "create_date",
+      "element": { "type": "fld", "table": "object_data", "field": "create_date" },
+      "config": { "label": "Kurs erstellt", "sortable": true, "filter": { "type": "text", "placeholder": "Filter" } }
+    },
+    {
+      "alias": "last_update",
+      "element": { "type": "fld", "table": "object_data", "field": "last_update" },
+      "config": { "label": "Letzte Änderung", "sortable": true, "filter": { "type": "text", "placeholder": "Filter" } }
+    },
+    {
+      "alias": "period_start",
+      "element": { "type": "fld", "table": "crs_settings", "field": "period_start" },
+      "config": { "label": "Kurs-Start", "sortable": true, "filter": { "type": "text", "placeholder": "Filter" } }
+    },
+    {
+      "alias": "period_end",
+      "element": { "type": "fld", "table": "crs_settings", "field": "period_end" },
+      "config": { "label": "Kurs-Ende", "sortable": true, "filter": { "type": "text", "placeholder": "Filter" } }
+    }
+  ],
+  "table": "usr_data",
+  "where": {
+    "type": "op",
+    "operator": "AND",
+    "params": [
+      {
+        "type": "op",
+        "operator": ">",
+        "params": [ { "type": "fld", "table": "obj_members", "field": "member" }, 0 ]
+      },
+      {
+        "type": "op",
+        "operator": "EXISTS",
+        "params": [
+          {
+            "type": "subquery",
+            "query": {
+              "type": "select",
+              "table": "object_reference",
+              "fields": [ { "element": 1 } ],
+              "where": {
+                "type": "op",
+                "operator": "AND",
+                "params": [
+                  {
+                    "type": "op",
+                    "operator": "=",
+                    "params": [
+                      { "type": "fld", "table": "object_data", "field": "obj_id" },
+                      { "type": "fld", "table": "object_reference", "tablealias": "_myor", "field": "obj_id" }
+                    ]
+                  },
+                  {
+                    "type": "op",
+                    "operator": "IS",
+                    "params": [
+                      { "type": "fld", "table": "object_reference", "tablealias": "_myor", "field": "deleted" },
+                      null
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

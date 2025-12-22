@@ -1,0 +1,29 @@
+{
+	"name": "usr_data",
+	"label": "Personal user data",
+	"description": "Records of full user data",
+	"domain": "ilias",
+	"category": "data",
+	"tags": ["user", "personal", "name"],
+	"fields": [
+		{ "name": "usr_id", "type": "integer", "label": "User ID", "required": true },
+		{ "name": "login", "type": "string", "label": "Login" },
+		{ "name": "firstname", "type": "string", "label": "First name" },
+		{ "name": "lastname", "type": "string", "label": "Last name" },
+		{ "name": "email", "type": "string", "label": "Email" },
+		{ "name": "institution", "type": "string", "label": "Institution" },
+		{ "name": "matriculation", "type": "string", "label": "Matriculation" },
+		{ "name": "active", "type": "boolean", "label": "Is active" },
+		{ "name": "last_login", "type": "datetime", "label": "Date and time of last login" }
+	],
+	"joins": [
+		{
+			"targetTable": "obj_members",
+			"on": { "usr_data.usr_id": "obj_members.usr_id" },
+			"type": "INNER",
+			"meta": { "default": true }
+		}
+	],
+	"defaultFilters": [],
+	"position": { "x": 50, "y": 50 }
+}

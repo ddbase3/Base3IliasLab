@@ -1,0 +1,23 @@
+{
+	"name": "object_reference",
+	"label": "ILIAS object references",
+	"description": "Maps reference IDs (ref_id) to objects (obj_id) and tracks deletion metadata.",
+	"domain": "ilias",
+	"category": "data",
+	"tags": ["ilias", "object", "reference", "ref_id"],
+	"fields": [
+		{ "name": "ref_id", "type": "integer", "label": "Reference ID", "required": true },
+		{ "name": "obj_id", "type": "integer", "label": "Object ID" },
+		{ "name": "deleted", "type": "datetime", "label": "Deleted at" }
+	],
+	"joins": [
+		{
+			"targetTable": "object_data",
+			"on": { "object_reference.obj_id": "object_data.obj_id" },
+			"type": "INNER",
+			"meta": { "default": true }
+		}
+	],
+	"defaultFilters": [],
+	"position": { "x": 700, "y": 20 }
+}

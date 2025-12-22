@@ -1,0 +1,28 @@
+{
+	"name": "crs_settings",
+	"label": "Course settings",
+	"description": "Course-related settings including syllabus, contact information and period dates.",
+	"domain": "ilias",
+	"category": "data",
+	"tags": ["course", "settings", "contact", "syllabus"],
+	"fields": [
+		{ "name": "obj_id", "type": "integer", "label": "Course object ID", "required": true },
+		{ "name": "syllabus", "type": "string", "label": "Syllabus", "required": false },
+		{ "name": "contact_name", "type": "string", "label": "Contact name", "required": false },
+		{ "name": "contact_responsibility", "type": "string", "label": "Contact responsibility", "required": false },
+		{ "name": "contact_phone", "type": "string", "label": "Contact phone", "required": false },
+		{ "name": "contact_email", "type": "string", "label": "Contact email", "required": false },
+		{ "name": "period_start", "type": "datetime", "label": "Period start", "required": false },
+		{ "name": "period_end", "type": "datetime", "label": "Period end", "required": false }
+	],
+	"joins": [
+		{
+			"targetTable": "object_data",
+			"on": { "crs_settings.obj_id": "object_data.obj_id" },
+			"type": "INNER",
+			"meta": { "default": true }
+		}
+	],
+	"defaultFilters": [],
+	"position": { "x": 650, "y": 200 }
+}
