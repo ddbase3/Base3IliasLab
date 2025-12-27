@@ -1,0 +1,69 @@
+{
+	"nodes": [
+		{
+			"id": "assistant",
+			"type": "streamingaiassistantnode",
+			"docks": {
+				"chatmodel": [ "openai" ],
+				"memory": [ "sessionmemory", "timememory" ],
+				"tools": [],
+				"logger": [ "log" ]
+			}
+		}
+	],
+	"resources": [
+                {
+                        "id": "openai",
+                        "type": "openaichatmodelagentresource",
+                        "config": {
+                                "apikey": { "mode": "config", "section": "openai", "key": "apikey" },
+                                "model": { "mode": "fixed", "value": "gpt-4o-mini" },
+                                "temperature": { "mode": "fixed", "value": 0.3 }
+                        }
+                },
+                {
+                        "id": "qualitusai",
+                        "type": "qualitusaichatproxyagentresource",
+                        "config": {
+                                "apikey": { "mode": "config", "section": "qualituschat", "key": "apikey" },
+                                "model": { "mode": "fixed", "value": "Qwen/Qwen2.5-14B-Instruct-AWQ" },
+                                "temperature": { "mode": "fixed", "value": 0.3 }
+                        }
+                },
+		{
+			"id": "sessionmemory",
+			"type": "sessionmemoryagentresource",
+			"config": {
+				"max": { "mode": "fixed", "value": 5 }
+			},
+			"docks": {
+				"logger": [ "log" ]
+			}
+		},
+		{
+			"id": "timememory",
+			"type": "timememoryagentresource"
+		},
+		{
+			"id": "log",
+			"type": "loggerresource",
+			"config": {
+				"scope": { "mode": "fixed", "value": "reporting-chatbot" }
+			}
+		}
+	],
+	"connections": [
+		{
+			"from": "__input__",
+			"output": "system",
+			"to": "assistant",
+			"input": "system"
+		},
+		{
+			"from": "__input__",
+			"output": "user",
+			"to": "assistant",
+			"input": "prompt"
+		}
+	]
+}
