@@ -1,0 +1,62 @@
+{
+        "nodes": [
+                {
+                        "id": "assistant",
+                        "type": "aiassistantnode",
+                        "docks": {
+                                "chatmodel": [ "llm" ],
+                                "memory": [ "timememory", "sessionmemory" ],
+                                "logger": [ "log" ]
+                        }
+                }
+        ],
+        "resources": [
+                {
+                        "id": "llm",
+                        "type": "openaichatmodelagentresource",
+                        "config": {
+                                "apikey": { "mode": "config", "section": "openai", "key": "apikey" },
+                                "model": { "mode": "fixed", "value": "gpt-4o-mini" },
+                                "temperature": { "mode": "fixed", "value": 0.3 }
+                        }
+                },
+                {
+                        "id": "sessionmemory",
+                        "type": "sessionmemoryagentresource",
+                        "docks": {
+                                "logger": [ "log" ]
+                        }
+                },
+                {
+                        "id": "timememory",
+                        "type": "timememoryagentresource"
+                },
+                {
+                        "id": "log",
+                        "type": "loggerresource",
+                        "config": {
+                                "scope": { "mode": "fixed", "value": "ContourzTestChatSuggestions" }
+                        }
+                }
+        ],
+        "connections": [
+                {
+                        "from": "__input__",
+                        "output": "system",
+                        "to": "assistant",
+                        "input": "system"
+                },
+                {
+                        "from": "__input__",
+                        "output": "prompt",
+                        "to": "assistant",
+                        "input": "prompt"
+                },
+                {
+                        "from": "__input__",
+                        "output": "mode",
+                        "to": "assistant",
+                        "input": "mode"
+                }
+        ]
+}

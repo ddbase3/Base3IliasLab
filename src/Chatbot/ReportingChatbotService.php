@@ -24,7 +24,11 @@ class ReportingChatbotService extends ChatbotService {
                 return $this->configDir . 'reporting-agentflow.json';
         }
 
-	protected function suggestPrompts(): string {
-		return parent::suggestPrompts();
+	protected function getSuggestionPromptFile(): string {
+		return $this->configDir . 'suggestion-systemprompt.txt';
 	}
+
+        protected function getSuggestionFlowFile(): string {
+                return $this->configDir . 'suggestion-agentflow.json';
+        }
 }
