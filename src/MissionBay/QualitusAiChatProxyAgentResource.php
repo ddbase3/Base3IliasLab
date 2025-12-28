@@ -21,8 +21,14 @@ use MissionBay\Resource\AbstractAgentResource;
  * - chat() non-stream
  * - raw() non-stream
  * - stream() SSE streaming with token callbacks
+ *
+ * Important:
+ * - Tool messages must only be sent if they respond to a preceding assistant message
+ *	 that declared matching tool_calls in the SAME outgoing payload.
+ *	 Otherwise the backend may reject (OpenAI-compatible behavior).
  */
 class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements IAiChatModel {
+
 	protected IAgentConfigValueResolver $resolver;
 
 	protected array|string|null $modelConfig = null;
@@ -46,16 +52,6 @@ class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements 
 		return 'Connects to Qualitus AI Chat Proxy. Supports streaming (SSE) and non-streaming chat.';
 	}
 
-	/**
-	 * Load config from Flow JSON, resolve dynamic config values.
-	 *
-	 * Expected config keys:
-	 * - model (default: Qwen/Qwen2.5-14B-Instruct-AWQ)
-	 * - apikey (required) (aliases: proxy_token, token)
-	 * - endpoint (default: https://qki-proto1.qualitus.net/base3.php?name=aichatproxy)
-	 * - temperature (default: 0.7)
-	 * - max_tokens (default: 256)
-	 */
 	public function setConfig(array $config): void {
 		parent::setConfig($config);
 
@@ -82,9 +78,6 @@ class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements 
 		$this->resolvedOptions = array_merge($this->resolvedOptions, $options);
 	}
 
-	/**
-	 * Basic chat (non-streaming).
-	 */
 	public function chat(array $messages): string {
 		$result = $this->raw($messages);
 
@@ -103,10 +96,6 @@ class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements 
 		return $content;
 	}
 
-	/**
-	 * Raw request (non-streaming).
-	 * Tools are optional and only included if your proxy supports them.
-	 */
 	public function raw(array $messages, array $tools = []): mixed {
 		$model     = $this->resolvedOptions['model'] ?? 'Qwen/Qwen2.5-14B-Instruct-AWQ';
 		$apikey    = $this->resolvedOptions['apikey'] ?? null;
@@ -169,14 +158,6 @@ class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements 
 		return $data;
 	}
 
-	/**
-	 * Streaming SSE implementation.
-	 * Expects lines like:
-	 * - data: {...json...}
-	 * - data: [DONE]
-	 *
-	 * This implementation buffers partial lines across cURL chunks.
-	 */
 	public function stream(array $messages, array $tools, callable $onData, callable $onMeta = null): void {
 		$model     = $this->resolvedOptions['model'] ?? 'Qwen/Qwen2.5-14B-Instruct-AWQ';
 		$apikey    = $this->resolvedOptions['apikey'] ?? null;
@@ -259,10 +240,8 @@ class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements 
 					]);
 				}
 
-				// OpenAI-like streaming: choices[0].delta.content
 				$delta = $choice['delta']['content'] ?? null;
 
-				// Fallbacks: delta.text or top-level delta.
 				if ($delta === null) {
 					$delta = $choice['delta']['text'] ?? ($json['delta']['content'] ?? null);
 				}
@@ -300,13 +279,14 @@ class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements 
 
 	/**
 	 * Normalize "rich" message objects into plain role/content messages.
-	 * Supports:
-	 * - tool messages (role=tool with tool_call_id)
-	 * - assistant tool_calls (OpenAI-compatible)
-	 * - optional feedback injection as extra user message
+	 *
+	 * Critical invariant:
+	 * - A tool message is only allowed if we have seen a preceding assistant tool_calls
+	 *	 message that declared the same tool_call_id in THIS outgoing payload.
 	 */
 	private function normalizeMessages(array $messages): array {
 		$out = [];
+		$validToolCallIds = [];
 
 		foreach ($messages as $m) {
 			if (!is_array($m) || !isset($m['role'])) {
@@ -316,19 +296,6 @@ class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements 
 			$role = (string)$m['role'];
 			$content = $m['content'] ?? '';
 
-			if ($role === 'tool') {
-				if (empty($m['tool_call_id'])) {
-					continue;
-				}
-
-				$out[] = [
-					'role' => 'tool',
-					'tool_call_id' => (string)$m['tool_call_id'],
-					'content' => is_string($content) ? $content : json_encode($content),
-				];
-				continue;
-			}
-
 			if ($role === 'assistant' && !empty($m['tool_calls']) && is_array($m['tool_calls'])) {
 				$toolCalls = [];
 
@@ -337,19 +304,23 @@ class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements 
 						continue;
 					}
 
+					$callId = (string)$call['id'];
 					$args = $call['function']['arguments'] ?? '{}';
+
 					if (!is_string($args)) {
 						$args = json_encode($args);
 					}
 
 					$toolCalls[] = [
-						'id' => (string)$call['id'],
+						'id' => $callId,
 						'type' => 'function',
 						'function' => [
 							'name' => (string)$call['function']['name'],
 							'arguments' => $args,
 						],
 					];
+
+					$validToolCallIds[$callId] = true;
 				}
 
 				$out[] = [
@@ -357,6 +328,27 @@ class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements 
 					'content' => is_string($content) ? $content : json_encode($content),
 					'tool_calls' => $toolCalls,
 				];
+
+				continue;
+			}
+
+			if ($role === 'tool') {
+				$toolCallId = (string)($m['tool_call_id'] ?? '');
+
+				// Skip orphaned tool messages to avoid backend 400 errors.
+				if ($toolCallId === '' || empty($validToolCallIds[$toolCallId])) {
+					continue;
+				}
+
+				$out[] = [
+					'role' => 'tool',
+					'tool_call_id' => $toolCallId,
+					'content' => is_string($content) ? $content : json_encode($content),
+				];
+
+				// Consume to avoid accidental duplicates.
+				unset($validToolCallIds[$toolCallId]);
+
 				continue;
 			}
 

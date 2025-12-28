@@ -5,8 +5,8 @@
 			"type": "streamingaiassistantnode",
 			"docks": {
 				"chatmodel": [ "router" ],
-				"memory": [ "sessionmemory", "timememory" ],
-				"tools": [ "webfetch", "helloworld", "canvasclose" ],
+				"memory": [ "userprefs", "sessionmemory", "timememory" ],
+				"tools": [ "userprefs", "webfetch", "helloworld", "canvasclose" ],
 				"logger": [ "log" ]
 			}
 		}
@@ -22,7 +22,7 @@
 				"maxfailures": { "mode": "fixed", "value": 3 },
 				"cooldownsec": { "mode": "fixed", "value": 120 },
 				"targets": {
-					"openai": { "tools": 1, "stream": 1, "weight": 1 },
+					"openai": { "tools": 1, "stream": 1, "weight": 0 },
 					"qualitusai": { "tools": 0, "stream": 1, "weight": 1 }
 				}
 			},
@@ -53,7 +53,7 @@
 			"id": "sessionmemory",
 			"type": "sessionmemoryagentresource",
 			"config": {
-				"max": { "mode": "fixed", "value": 5 }
+				"max": { "mode": "fixed", "value": 10 }
 			},
 			"docks": {
 				"logger": [ "log" ]
@@ -62,6 +62,16 @@
 		{
 			"id": "timememory",
 			"type": "timememoryagentresource"
+		},
+		{
+			"id": "userprefs",
+			"type": "userprefsagentresource",
+			"config": {
+				"systemtitle": { "mode": "fixed", "value": "User preferences" }
+			},
+			"docks": {
+				"logger": [ "log" ]
+			}
 		},
 		{
 			"id": "webfetch",
