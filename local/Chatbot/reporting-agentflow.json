@@ -22,7 +22,7 @@
 				"maxfailures": { "mode": "fixed", "value": 3 },
 				"cooldownsec": { "mode": "fixed", "value": 120 },
 				"targets": {
-					"openai": { "tools": 1, "stream": 1, "weight": 0 },
+					"openai": { "tools": 1, "stream": 0, "weight": 1 },
 					"qualitusai": { "tools": 0, "stream": 1, "weight": 1 }
 				}
 			},
