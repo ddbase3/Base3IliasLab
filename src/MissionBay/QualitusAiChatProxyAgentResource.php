@@ -14,7 +14,7 @@ use MissionBay\Resource\AbstractAgentResource;
  *
  * Headers:
  * - Content-Type: application/json
- * - X-Proxy-Token: <token>
+ * - X-Proxy-Token: <apikey>
  * - (stream) Accept: text/event-stream
  *
  * Supports:
@@ -26,7 +26,7 @@ class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements 
 	protected IAgentConfigValueResolver $resolver;
 
 	protected array|string|null $modelConfig = null;
-	protected array|string|null $proxyTokenConfig = null;
+	protected array|string|null $apikeyConfig = null;
 	protected array|string|null $endpointConfig = null;
 	protected array|string|null $temperatureConfig = null;
 	protected array|string|null $maxTokensConfig = null;
@@ -51,7 +51,7 @@ class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements 
 	 *
 	 * Expected config keys:
 	 * - model (default: Qwen/Qwen2.5-14B-Instruct-AWQ)
-	 * - proxy_token (required) (alias: token)
+	 * - apikey (required) (aliases: proxy_token, token)
 	 * - endpoint (default: https://qki-proto1.qualitus.net/base3.php?name=aichatproxy)
 	 * - temperature (default: 0.7)
 	 * - max_tokens (default: 256)
@@ -60,14 +60,14 @@ class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements 
 		parent::setConfig($config);
 
 		$this->modelConfig       = $config['model'] ?? null;
-		$this->proxyTokenConfig  = $config['proxy_token'] ?? ($config['token'] ?? null);
+		$this->apikeyConfig      = $config['apikey'] ?? ($config['proxy_token'] ?? ($config['token'] ?? null));
 		$this->endpointConfig    = $config['endpoint'] ?? null;
 		$this->temperatureConfig = $config['temperature'] ?? null;
 		$this->maxTokensConfig   = $config['max_tokens'] ?? null;
 
 		$this->resolvedOptions = [
 			'model'       => $this->resolver->resolveValue($this->modelConfig) ?? 'Qwen/Qwen2.5-14B-Instruct-AWQ',
-			'proxy_token' => $this->resolver->resolveValue($this->proxyTokenConfig),
+			'apikey'      => $this->resolver->resolveValue($this->apikeyConfig),
 			'endpoint'    => $this->resolver->resolveValue($this->endpointConfig) ?? 'https://qki-proto1.qualitus.net/base3.php?name=aichatproxy',
 			'temperature' => (float)($this->resolver->resolveValue($this->temperatureConfig) ?? 0.7),
 			'max_tokens'  => (int)($this->resolver->resolveValue($this->maxTokensConfig) ?? 256),
@@ -109,16 +109,16 @@ class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements 
 	 */
 	public function raw(array $messages, array $tools = []): mixed {
 		$model     = $this->resolvedOptions['model'] ?? 'Qwen/Qwen2.5-14B-Instruct-AWQ';
-		$token     = $this->resolvedOptions['proxy_token'] ?? null;
+		$apikey    = $this->resolvedOptions['apikey'] ?? null;
 		$endpoint  = (string)($this->resolvedOptions['endpoint'] ?? '');
 		$temp      = $this->resolvedOptions['temperature'] ?? 0.7;
 		$maxTokens = $this->resolvedOptions['max_tokens'] ?? 256;
 
-		if (!$token) {
-			throw new \RuntimeException("Missing proxy token (X-Proxy-Token).");
+		if (!$apikey) {
+			throw new \RuntimeException("Missing API key for Qualitus chat proxy (X-Proxy-Token).");
 		}
 		if ($endpoint === '') {
-			throw new \RuntimeException("Missing endpoint for chat proxy.");
+			throw new \RuntimeException("Missing endpoint for Qualitus chat proxy.");
 		}
 
 		$normalized = $this->normalizeMessages($messages);
@@ -139,7 +139,7 @@ class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements 
 
 		$headers = [
 			'Content-Type: application/json',
-			'X-Proxy-Token: ' . $token,
+			'X-Proxy-Token: ' . $apikey,
 		];
 
 		$ch = curl_init($endpoint);
@@ -179,16 +179,16 @@ class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements 
 	 */
 	public function stream(array $messages, array $tools, callable $onData, callable $onMeta = null): void {
 		$model     = $this->resolvedOptions['model'] ?? 'Qwen/Qwen2.5-14B-Instruct-AWQ';
-		$token     = $this->resolvedOptions['proxy_token'] ?? null;
+		$apikey    = $this->resolvedOptions['apikey'] ?? null;
 		$endpoint  = (string)($this->resolvedOptions['endpoint'] ?? '');
 		$temp      = $this->resolvedOptions['temperature'] ?? 0.7;
 		$maxTokens = $this->resolvedOptions['max_tokens'] ?? 256;
 
-		if (!$token) {
-			throw new \RuntimeException("Missing proxy token (X-Proxy-Token).");
+		if (!$apikey) {
+			throw new \RuntimeException("Missing API key for Qualitus chat proxy (X-Proxy-Token).");
 		}
 		if ($endpoint === '') {
-			throw new \RuntimeException("Missing endpoint for chat proxy.");
+			throw new \RuntimeException("Missing endpoint for Qualitus chat proxy.");
 		}
 
 		$normalized = $this->normalizeMessages($messages);
@@ -211,7 +211,7 @@ class QualitusAiChatProxyAgentResource extends AbstractAgentResource implements 
 		$headers = [
 			'Content-Type: application/json',
 			'Accept: text/event-stream',
-			'X-Proxy-Token: ' . $token,
+			'X-Proxy-Token: ' . $apikey,
 		];
 
 		$buffer = '';
